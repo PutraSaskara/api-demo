@@ -66,7 +66,7 @@ exports.updateBlog = async (req, res) => {
       }
 
       // Update image URL and image name with new file data
-      imageUrl = "http://localhost:5000/uploads/" + req.file.filename;
+      imageUrl = "https://sas-api.vercel.app/uploads/" + req.file.filename;
       imageName = req.file.filename;
     }
 
@@ -140,7 +140,7 @@ exports.createBlogWithImage = async (req, res) => {
     }
 
     // Generate the image URL
-    const imageUrl = "http://localhost:5000/uploads/" + req.file.filename;
+    const imageUrl = "https://sas-api.vercel.app/uploads/" + req.file.filename;
 
     // Create user record with image name and URL
     const newUser = await User.create({
