@@ -9,3 +9,15 @@ const db = new Sequelize('personal_menwishfew','personal_menwishfew','5975180a8f
 });
 
 module.exports = db;
+
+// const { Sequelize } = require("sequelize");
+// const mysql2 = require('mysql2');
+
+// const db = new Sequelize('demo','root','',{
+//     host: 'localhost',
+//     dialect: 'mysql',
+//     dialectModule: mysql2,
+//     port: '3306'
+// });
+
+// module.exports = db;
