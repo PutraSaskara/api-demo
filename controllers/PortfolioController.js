@@ -22,7 +22,7 @@ exports.createPortoWithImage = async (req, res) => {
     }
 
     // Generate the image URL
-    const imageUrl = "https://sas-api.vercel.app/uploads/" + req.file.filename;
+    const imageUrl = "https://sas-api.vercel.app/" + req.file.filename;
 
     // Create user record with image name and URL
     const newPorto = await Portfolio.create({
@@ -86,7 +86,7 @@ exports.updatePorto = async (req, res) => {
     if (req.file) {
       // If a new file is uploaded, delete the old image file if it exists
       if (portfolio.image) {
-        const oldImagePath = `public/uploads/${portfolio.image}`;
+        const oldImagePath = `public/${portfolio.image}`;
         fs.unlink(oldImagePath, (error) => {
           if (error) {
             console.error("Error deleting old image:", error);
@@ -97,7 +97,7 @@ exports.updatePorto = async (req, res) => {
       }
 
       // Update image URL and image name with new file data
-      imageUrl = "https://sas-api.vercel.app/uploads/" + req.file.filename;
+      imageUrl = "https://sas-api.vercel.app/" + req.file.filename;
       imageName = req.file.filename;
     }
 
@@ -136,7 +136,7 @@ exports.deletePorto = async (req, res) => {
   
       // Delete the Portfolio's image file if it exists
       if (porto.image) {
-        const imagePath = `public/uploads/${porto.image}`;
+        const imagePath = `public/${porto.image}`;
         fs.unlink(imagePath, (error) => {
           if (error) {
             console.error("Error deleting image:", error);

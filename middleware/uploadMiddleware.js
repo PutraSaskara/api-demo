@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 // Set up Multer storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'public/uploads'); // Specify the destination folder for storing images
+        cb(null, 'public'); // Specify the destination folder for storing images
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

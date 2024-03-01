@@ -55,7 +55,7 @@ exports.updateBlog = async (req, res) => {
     if (req.file) {
       // If a new file is uploaded, delete the old image file if it exists
       if (blog.image) {
-        const oldImagePath = `public/uploads/${blog.image}`;
+        const oldImagePath = `public/${blog.image}`;
         fs.unlink(oldImagePath, (error) => {
           if (error) {
             console.error("Error deleting old image:", error);
@@ -66,7 +66,7 @@ exports.updateBlog = async (req, res) => {
       }
 
       // Update image URL and image name with new file data
-      imageUrl = "https://sas-api.vercel.app/uploads/" + req.file.filename;
+      imageUrl = "https://sas-api.vercel.app/" + req.file.filename;
       imageName = req.file.filename;
     }
 
@@ -106,7 +106,7 @@ exports.deleteBlog = async (req, res) => {
 
     // Delete the user's image file if it exists
     if (blog.image) {
-      const imagePath = `public/uploads/${blog.image}`;
+      const imagePath = `public/${blog.image}`;
       fs.unlink(imagePath, (error) => {
         if (error) {
           console.error("Error deleting image:", error);
@@ -140,7 +140,7 @@ exports.createBlogWithImage = async (req, res) => {
     }
 
     // Generate the image URL
-    const imageUrl = "https://sas-api.vercel.app/uploads/" + req.file.filename;
+    const imageUrl = "https://sas-api.vercel.app/" + req.file.filename;
 
     // Create user record with image name and URL
     const newUser = await User.create({
