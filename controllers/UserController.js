@@ -1,5 +1,44 @@
-const fs = require("fs");
-const User = require("../models/UserModel.js");
+const cloudinary = require('cloudinary').v2;
+const User = require('../models/UserModel.js');
+
+// Configure Cloudinary with your credentials
+cloudinary.config({ 
+  cloud_name: 'dalvkfb1d', 
+  api_key: '158613853343135', 
+  api_secret: 'jQhlPWXjoZEy0NfJa5Z87p4-DnM' 
+});
+
+// Function to upload an image to Cloudinary
+// async function uploadImageToCloudinary(imageData) {
+//   try {
+//     const result = await cloudinary.uploader.upload(imageData, {
+//       upload_preset: 'sas', // Specify your Cloudinary upload preset   name here
+//     });
+//     console.log('Image uploaded to Cloudinary:', result);
+//     return result;
+//   } catch (error) {
+//     console.error('Error uploading image to Cloudinary:', error); 
+//     throw error;
+//   }
+// }
+
+async function uploadImageToCloudinary(imageData) {
+  try {
+    const result = await cloudinary.uploader.upload(imageData, {
+      upload_preset: 'sas', // Specify your Cloudinary upload preset name here
+    });
+
+    // Log Cloudinary public ID and secure URL
+    console.log('Image uploaded to Cloudinary:', result.public_id);
+    console.log('Secure URL:', result.secure_url);
+
+    return result;
+  } catch (error) {
+    console.error('Error uploading image to Cloudinary:', error);
+    throw error;
+  }
+}
+
 
 exports.getBlogs = async (req, res) => {
   try {
@@ -13,18 +52,11 @@ exports.getBlogs = async (req, res) => {
 
 exports.getBlogById = async (req, res) => {
   try {
-    // Extract user id from request parameters
     const { id } = req.params;
-
-    // Find the user by id
     const blog = await User.findByPk(id);
-
-    // If user does not exist, return 404 Not Found
     if (!blog) {
       return res.status(404).json({ error: "Blog not found" });
     }
-
-    // Return the user details
     res.status(200).json(blog);
   } catch (error) {
     console.error("Error getting blog by ID:", error.message);
@@ -34,43 +66,33 @@ exports.getBlogById = async (req, res) => {
 
 exports.updateBlog = async (req, res) => {
   try {
-    // Extract user id from request parameters
     const { id } = req.params;
-
-    // Find the user by id
     let blog = await User.findByPk(id);
-
-    // If user does not exist, return 404 Not Found
     if (!blog) {
       return res.status(404).json({ error: "Blog not found" });
     }
-
-    // Access form-data fields
     const { source, author, title, description, content, keywords } = req.body;
-
-    // Check if a file is uploaded
-    let imageUrl = blog.imageUrl; // Preserve existing image URL by default
-    let imageName = blog.image; // Preserve existing image name by default
+    let imageUrl = blog.imageUrl;
+    let imageName = blog.image;
 
     if (req.file) {
-      // If a new file is uploaded, delete the old image file if it exists
-      if (blog.image) {
-        const oldImagePath = `public/${blog.image}`;
-        fs.unlink(oldImagePath, (error) => {
-          if (error) {
-            console.error("Error deleting old image:", error);
-          } else {
-            console.log("Old image deleted successfully");
-          }
-        });
+      // Delete old image from Cloudinary
+      if (imageName) {
+        try {
+          await cloudinary.uploader.destroy(blog.image);
+          console.log('Old image deleted from Cloudinary');
+        } catch (error) {
+          console.error('Error deleting old image from Cloudinary:', error.message);
+          // Handle error (e.g., log it, return error response)
+        }
       }
 
-      // Update image URL and image name with new file data
-      imageUrl = "https://sas-api.vercel.app/" + req.file.filename;
-      imageName = req.file.filename;
+      // Upload new image to Cloudinary
+      const result = await uploadImageToCloudinary(req.file.path);
+      imageUrl = result.secure_url;
+      imageName = result.public_id;
     }
 
-    // Update user record with new details
     await blog.update({
       source,
       author,
@@ -82,47 +104,29 @@ exports.updateBlog = async (req, res) => {
       imageUrl: imageUrl,
     });
 
-    // Return updated user details
-    blog = await User.findByPk(id); // Fetch updated user details
+    blog = await User.findByPk(id);
     res.status(200).json(blog);
   } catch (error) {
-    console.error("Error updating user:", error.message);
-    res.status(400).json({ error: "Could not update user" });
+    console.error("Error updating blog:", error.message);
+    res.status(400).json({ error: "Could not update blog" });
   }
 };
 
+
+
 exports.deleteBlog = async (req, res) => {
   try {
-    // Extract user id from request parameters
     const { id } = req.params;
-
-    // Find the user by id
     const blog = await User.findByPk(id);
-
-    // If user does not exist, return 404 Not Found
     if (!blog) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    // Delete the user's image file if it exists
     if (blog.image) {
-      const imagePath = `public/${blog.image}`;
-      fs.unlink(imagePath, (error) => {
-        if (error) {
-          console.error("Error deleting image:", error);
-        } else {
-          console.log("Image deleted successfully");
-        }
-      });
+      // Delete image from Cloudinary
+      await cloudinary.uploader.destroy(blog.image);
     }
-
-    // Delete the user from the database
     await blog.destroy();
-
-    // Return success message
-    res
-      .status(200)
-      .json({ message: "User and associated image deleted successfully" });
+    res.status(200).json({ message: "User and associated image deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error.message);
     res.status(500).json({ error: "Could not delete user and image" });
@@ -131,18 +135,18 @@ exports.deleteBlog = async (req, res) => {
 
 exports.createBlogWithImage = async (req, res) => {
   try {
-    // Access form-data fields
     const { source, author, title, description, content, keywords } = req.body;
-
-    // Check if a file is uploaded
     if (!req.file) {
       throw new Error("No image uploaded");
     }
+    const result = await uploadImageToCloudinary(req.file.path);
 
-    // Generate the image URL
-    const imageUrl = "https://sas-api.vercel.app/" + req.file.filename;
+    // Log Cloudinary public ID and secure URL
+    console.log('Image uploaded to Cloudinary from uploadimage:', result.public_id);
+    console.log('Secure URL upload image:', result.secure_url);
 
-    // Create user record with image name and URL
+    const imageUrl = result.secure_url;
+    const imageName = result.public_id;
     const newUser = await User.create({
       source,
       author,
@@ -150,13 +154,13 @@ exports.createBlogWithImage = async (req, res) => {
       description,
       content,
       keywords,
-      image: req.file.filename, // Save the image name to your user model
-      imageUrl: imageUrl, // Save the image URL to your user model
+      image: imageName,
+      imageUrl: imageUrl,
     });
-
     res.status(201).json(newUser);
   } catch (error) {
     console.error("Error creating user with image:", error.message);
     res.status(400).json({ error: error.message });
   }
 };
+

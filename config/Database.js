@@ -26,6 +26,9 @@ const db = new Sequelize('sql6687828','sql6687828','w8wSEufqNR',{
 
 module.exports = db;
 
+
+// local
+
 // const { Sequelize } = require("sequelize");
 // const mysql2 = require('mysql2');
 
@@ -36,4 +39,4 @@ module.exports = db;
 //     port: '3306'
 // });
 
-// module.exports = db;
+module.exports = db;
