@@ -1,13 +1,27 @@
-// filess.io
-
 const { Sequelize } = require("sequelize");
 const mysql2 = require('mysql2');
+require('dotenv').config();
 
-const db = new Sequelize('personal_menwishfew','personal_menwishfew','5975180a8f3e376dc2b84e81ac96001327162fc9',{
-    host: '3dg.h.filess.io',
+// filess.io
+
+// const { Sequelize } = require("sequelize");
+// const mysql2 = require('mysql2');
+
+// const db = new Sequelize('personal_menwishfew','personal_menwishfew','5975180a8f3e376dc2b84e81ac96001327162fc9',{
+//     host: '3dg.h.filess.io',
+//     dialect: 'mysql',
+//     dialectModule: mysql2,
+//     port: '3307'
+// });
+
+// module.exports = db;
+
+
+const db = new Sequelize('defaultdb','avnadmin',process.env.VARIABLE_PASSWORD,{
+    host: process.env.VARIABLE_HOST,
     dialect: 'mysql',
     dialectModule: mysql2,
-    port: '3307'
+    port: '21286'
 });
 
 module.exports = db;
